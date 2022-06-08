@@ -1,0 +1,14 @@
+{
+  "autoload": {
+    "psr-4": {
+      "MODULENAME\\": "src/",
+      "MODULENAME\\Database\\Factories\\": "database/factories",
+      "MODULENAME\\Database\\Seeeders\\": "database/seeders"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MODULENAME\\Tests\\": "tests/"
+    }
+  }
+}

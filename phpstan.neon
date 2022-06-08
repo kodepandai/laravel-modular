@@ -1,0 +1,10 @@
+includes:
+  - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+  paths:
+    - config
+    - src
+  level: 6 # https://phpstan.org/user-guide/rule-levels
+  checkMissingIterableValueType: false
+  ignoreErrors:
