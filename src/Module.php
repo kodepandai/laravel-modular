@@ -2,33 +2,43 @@
 
 namespace KodePandai\Modular;
 
+use Exception;
+use Illuminate\Support\Facades\File;
+use Symfony\Component\Finder\SplFileInfo;
+
 class Module
 {
     public string $name;
 
-    public array $configFileNames = [];
+    public string $basePath;
 
     public bool $hasViews = false;
 
-    public array $viewComponents = [];
+    public string $viewPath = '';
 
-    public array $viewComposers = [];
+    public bool $hasMigrations = false;
+
+    public string $migrationPath = '';
 
     public bool $hasTranslations = false;
 
-    public array $migrationPaths = [];
+    public string $translationPath = '';
 
-    public array $routeFileNames = [];
+    public bool $hasHelper = false;
+
+    public string $helperFile = '';
+
+    public array $configFiles = [];
+
+    public array $routeFiles = [];
 
     public array $commands = [];
 
-    public array $helpers = [];
+    public array $viewComponents = [];
 
     public array $middlewares = [];
 
     public array $serviceProviders = [];
-
-    public string $basePath;
 
     public function name(string $name): self
     {
@@ -37,42 +47,18 @@ class Module
         return $this;
     }
 
-    public function hasConfigFile(string $configFileName): self
-    {
-        $this->configFileNames[] = $configFileName;
-
-        return $this;
-    }
-
-    public function hasConfigFiles(array $configFileNames): self
-    {
-        $this->configFileNames = array_merge(
-            $this->configFileNames,
-            collect($configFileNames)->flatten()->toArray()
-        );
-
-        return $this;
-    }
-
     public function hasViews(): self
     {
         $this->hasViews = true;
+        $this->viewPath = $this->basePath('resources/views');
 
         return $this;
     }
 
-    public function hasViewComponent(string $prefix, string $viewComponentName): self
+    public function hasMigrations(): self
     {
-        $this->viewComponents[$viewComponentName] = $prefix;
-
-        return $this;
-    }
-
-    public function hasViewComponents(string $prefix, array $viewComponentNames): self
-    {
-        foreach ($viewComponentNames as $componentName) {
-            $this->viewComponents[$componentName] = $prefix;
-        }
+        $this->hasMigrations = true;
+        $this->migrationPath = $this->basePath('database/migrations');
 
         return $this;
     }
@@ -80,49 +66,106 @@ class Module
     public function hasTranslations(): self
     {
         $this->hasTranslations = true;
+        $this->translationPath = $this->basePath('lang');
 
         return $this;
     }
 
-    public function hasMigrationPath(string $migrationPath): self
+    public function hasHelper(): self
     {
-        $this->migrationPaths[] = $migrationPath;
+        $this->hasHelper = true;
+        $this->helperFile = $this->basePath('helpers.php');
+
+        if (! file_exists($this->helperFile)) {
+            throw new Exception("File {$this->helperFile} not found!");
+        }
 
         return $this;
     }
 
-    public function hasMigrationPaths(array $migrationPaths): self
+    public function hasConfig(string $configName): self
     {
-        $this->migrationPaths = array_merge(
-            $this->migrationPaths,
-            collect($migrationPaths)->flatten()->toArray()
-        );
+        return $this->hasConfigs([$configName]);
+    }
+
+    public function hasConfigs(array $configNames = []): self
+    {
+        if (! empty($configNames)) {
+            //.
+            $configFiles = [];
+
+            foreach ($configNames as $configName) {
+                //.
+                $path = $this->basePath("config/{$configName}.php");
+                if (! file_exists($path)) {
+                    throw new \Exception("Config file {$configName} does not exists!");
+                }
+                $configFiles[$configName] = $path;
+            }
+        } else {
+            //.
+            $configFiles = $this->scanConfigs();
+        }
+
+        $this->configFiles = array_merge($this->configFiles, $configFiles);
 
         return $this;
     }
 
-    public function hasRoute(string $routeFileName): self
+    private function scanConfigs(): array
     {
-        $this->routeFileNames[] = $routeFileName;
+        $files = $this->getPhpFilesFromDirectory($this->basePath('config'));
+
+        $configFiles = [];
+        foreach ($files as $file) {
+            $name = str_replace('.php', '', $file->getBaseName());
+            $configFiles[$name] = $file->getPathname();
+        }
+
+        return $configFiles;
+    }
+
+    public function hasRoute(string $routeName): self
+    {
+        return $this->hasRoutes([$routeName]);
+    }
+
+    public function hasRoutes(array $routeNames = []): self
+    {
+        if (! empty($routeNames)) {
+            //.
+            $routeFiles = [];
+
+            foreach ($routeNames as $routeName) {
+                //.
+                $path = $this->basePath("routes/{$routeName}.php");
+                if (! file_exists($path)) {
+                    throw new \Exception("Route file {$routeName} does not exists!");
+                }
+                $routeFiles[] = $path;
+            }
+        } else {
+            //.
+            $routeFiles = $this->scanRoutes();
+        }
+
+        $this->routeFiles = array_merge($this->routeFiles, $routeFiles);
 
         return $this;
     }
 
-    public function hasRoutes(array $routeFileNames): self
+    private function scanRoutes(): array
     {
-        $this->routeFileNames = array_merge(
-            $this->routeFileNames,
-            collect($routeFileNames)->flatten()->toArray()
-        );
+        $files = $this->getPhpFilesFromDirectory($this->basePath('routes'));
 
-        return $this;
+        return array_map(function (SplFileInfo $file) {
+            return $file->getPathname();
+        }, $files);
     }
 
     public function hasCommand(string $commandClassName): self
     {
-        $this->commands[] = $commandClassName;
-
-        return $this;
+        return $this->hasCommands([$commandClassName]);
     }
 
     public function hasCommands(array $commandClassNames): self
@@ -135,19 +178,16 @@ class Module
         return $this;
     }
 
-    public function hasHelper(string $helper): self
+    public function hasViewComponent(string $prefix, string $viewComponentName): self
     {
-        $this->helpers[] = $helper;
-
-        return $this;
+        return $this->hasViewComponents($prefix, [$viewComponentName]);
     }
 
-    public function hasHelpers(array $helpers): self
+    public function hasViewComponents(string $prefix, array $viewComponentNames): self
     {
-        $this->helpers = array_merge(
-            $this->helpers,
-            collect($helpers)->flatten()->toArray()
-        );
+        foreach ($viewComponentNames as $componentName) {
+            $this->viewComponents[$componentName] = $prefix;
+        }
 
         return $this;
     }
@@ -168,16 +208,14 @@ class Module
 
     public function hasServiceProvider(string $serviceProvider): self
     {
-        $this->serviceProviders[] = $serviceProvider;
-
-        return $this;
+        return $this->hasServiceProviders([$serviceProvider]);
     }
 
     public function hasServiceProviders(array $serviceProviders): self
     {
         $this->serviceProviders = array_merge(
             $this->serviceProviders,
-            collect($serviceProviders)->flatten()->toArray()
+            $serviceProviders
         );
 
         return $this;
@@ -185,12 +223,8 @@ class Module
 
     public function basePath(string $directory = null): string
     {
-        if ($directory === null) {
-            return $this->basePath;
-        }
-
-        return $this->basePath.DIRECTORY_SEPARATOR
-            .ltrim($directory, DIRECTORY_SEPARATOR);
+        return $directory === null
+            ? $this->basePath : "{$this->basePath}/" . ltrim($directory, '/');
     }
 
     public function setBasePath(string $path): self
@@ -198,5 +232,14 @@ class Module
         $this->basePath = $path;
 
         return $this;
+    }
+
+    private function getPhpFilesFromDirectory($path): array
+    {
+        $files = File::allFiles($path);
+
+        return array_filter($files, function ($file) {
+            return preg_match('/\.php/', $file->getBaseName());
+        });
     }
 }

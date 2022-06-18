@@ -1,23 +1,7 @@
-Copyright 2021 PT. Dirga Surya
-
-All rights reserved.
-
-=====
-
-Hak Cipta 2021 PT. Dirga Surya
-
-Seluruh hak cipta dilindungi undang-undang.
-
-=====
-
-Part of this laravel-module code are copied from spatie/laravel-package-tools. 
-Below are the license from spatie/laravel-package-tools.
-
-----
-
 The MIT License (MIT)
 
-Copyright (c) spatie freek@spatie.be
+Copyright (c) 2022 Kode Pandai - https://github.com/kodepandai  
+Copyright (c) 2022 spatie freek@spatie.be
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

@@ -2,15 +2,18 @@
 
 namespace KodePandai\Modular\Tests;
 
-use KodePandai\Modular\ModularServiceProvider;
+use KodePandai\Modular\Providers\PackageServiceProvider;
 
 /**
  * @see https://packages.tools/testbench/basic/testcase.html
  */
 class TestCase extends \Orchestra\Testbench\TestCase
 {
-    protected function getPackageProviders($app)
+    /**
+     * @param  \Illuminate\Foundation\Application  $app
+     */
+    protected function getPackageProviders($app): array
     {
-        return [ModularServiceProvider::class];
+        return [ PackageServiceProvider::class ];
     }
 }

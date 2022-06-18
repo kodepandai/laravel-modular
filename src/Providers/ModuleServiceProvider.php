@@ -1,11 +1,13 @@
 <?php
 
-namespace KodePandai\Modular;
+namespace KodePandai\Modular\Providers;
 
+use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use KodePandai\Modular\Exceptions\InvalidModuleException;
+use KodePandai\Modular\Module;
 use ReflectionClass;
 
 abstract class ModuleServiceProvider extends ServiceProvider
@@ -28,9 +30,12 @@ abstract class ModuleServiceProvider extends ServiceProvider
             throw InvalidModuleException::nameIsRequired();
         }
 
-        foreach ($this->module->configFileNames as $configFileName) {
-            $path = $this->module->basePath("/../config/{$configFileName}.php");
-            $this->mergeConfigFrom($path, $configFileName);
+        foreach ($this->module->configFiles as $configName => $configFile) {
+            $this->mergeConfigFrom($configFile, $configName);
+        }
+
+        if ($this->module->hasHelper) {
+            require_once $this->module->helperFile;
         }
 
         $this->moduleRegistered();
@@ -41,41 +46,27 @@ abstract class ModuleServiceProvider extends ServiceProvider
         $this->bootingModule();
 
         if ($this->module->hasViews) {
-            $this->loadViewsFrom(
-                $this->module->basePath('/../resources/views'),
-                $this->module->name
-            );
+            $this->loadViewsFrom($this->module->viewPath, $this->module->name);
         }
 
-        foreach ($this->module->viewComponents as $componentClass => $prefix) {
-            $this->loadViewComponentsAs($prefix, [$componentClass]);
+        if ($this->module->hasMigrations) {
+            $this->loadMigrationsFrom($this->module->migrationPath);
         }
 
         if ($this->module->hasTranslations) {
-            $this->loadTranslationsFrom(
-                $this->module->basePath('/../resources/lang/'),
-                $this->module->name
-            );
+            $this->loadTranslationsFrom($this->module->translationPath, $this->module->name);
         }
 
-        foreach ($this->module->migrationPaths as $migrationPath) {
-            $this->loadMigrationsFrom(
-                $this->module->basePath("/../${migrationPath}")
-            );
-        }
-
-        foreach ($this->module->routeFileNames as $routeFileName) {
-            $this->loadRoutesFrom(
-                "{$this->module->basePath('/../routes/')}{$routeFileName}.php"
-            );
+        foreach ($this->module->routeFiles as $routeFile) {
+            $this->loadRoutesFrom($routeFile);
         }
 
         if (! empty($this->module->commands)) {
             $this->commands($this->module->commands);
         }
 
-        foreach ($this->module->helpers as $helperPath) {
-            require_once $this->module->basePath("/../{$helperPath}");
+        foreach ($this->module->viewComponents as $componentClass => $prefix) {
+            $this->loadViewComponentsAs($prefix, [$componentClass]);
         }
 
         /** @var Router $router */
@@ -93,46 +84,51 @@ abstract class ModuleServiceProvider extends ServiceProvider
 
     public function registeringModule(): void
     {
+        // pass
     }
 
     public function moduleRegistered(): void
     {
+        // pass
     }
 
     public function bootingModule(): void
     {
+        // pass
     }
 
     public function moduleBooted(): void
     {
+        // pass
+    }
+
+    public function getModule(): Module
+    {
+        return $this->module;
     }
 
     protected function getModuleBaseDir(): string
     {
         $reflector = new ReflectionClass(get_class($this));
 
-        return dirname($reflector->getFileName());
+        return str_replace('/src/Providers', '', dirname($reflector->getFileName()));
     }
 
     /**
-     * Merge the given configuration with the existing configuration.
-     *
-     * @param string $path
-     * @param string $key
+     * @inheritDoc
      */
     protected function mergeConfigFrom($path, $key): void
     {
-        $config = $this->app->make('config');
-
-        $config->set($key, $this->mergeArray(
-            require $path,
-            $config->get($key, [])
-        ));
+        if (! ($this->app instanceof CachesConfiguration && $this->app->configurationIsCached())) {
+            $config = $this->app->make('config');
+            $config->set($key, $this->mergeArray(
+                require $path,
+                $config->get($key, [])
+            ));
+        }
     }
 
     /**
-     * Merges the configs together and takes multi-dimensional arrays into account.
-     *
      * @see https://gist.github.com/koenhoeijmakers/0a8e326ee3b12a826d73be38693fb647
      */
     protected function mergeArray(array $original, array $merging): array

@@ -1,14 +1,22 @@
 {
+  "name": "modules/_MODULENAMESLUG_",
   "autoload": {
     "psr-4": {
-      "MODULENAME\\": "src/",
-      "MODULENAME\\Database\\Factories\\": "database/factories",
-      "MODULENAME\\Database\\Seeeders\\": "database/seeders"
+      "_MODULENAME_\\": "src/",
+      "_MODULENAME_\\Database\\Factories\\": "database/factories",
+      "_MODULENAME_\\Database\\Seeeders\\": "database/seeders"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "MODULENAME\\Tests\\": "tests/"
+      "_MODULENAME_\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "_MODULENAME_\\Providers\\_MODULENAME_ServiceProvider"
+      ]
     }
   }
 }

@@ -1,18 +1,18 @@
 <?php
 
-namespace MODULENAME;
+namespace _MODULENAME_\Providers;
 
 use KodePandai\Modular\Module;
-use KodePandai\Modular\ModuleServiceProvider;
+use KodePandai\Modular\Providers\ModuleServiceProvider;
 
-class MODULENAMEServiceProvider extends ModuleServiceProvider
+class _MODULENAME_ServiceProvider extends ModuleServiceProvider
 {
     /**
      * @see https://github.com/kodepandai/laravel-modular/README.md
      */
     public function configureModule(Module $module): void
     {
-        $module->name('MODULENAME');
+        $module->name('_MODULENAME_');
     }
 
     public function moduleRegistered(): void
