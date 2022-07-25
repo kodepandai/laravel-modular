@@ -33,7 +33,7 @@ class InstallCommand extends Command
         if ($dirExists) {
             File::deleteDirectory(base_path('modules'));
             File::makeDirectory((base_path('modules')));
-            File::put(base_path('modules/.gitkeep'), '');
+            File::put(base_path('modules'.DIRECTORY_SEPARATOR.'.gitkeep'), '');
         }
 
         $this->info("> Success!");

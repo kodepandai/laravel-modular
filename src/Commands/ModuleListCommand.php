@@ -22,7 +22,7 @@ class ModuleListCommand extends Command
         foreach ($modules as $module) {
             // TODO: get whats loaded in the module (routes, config, etc)
             $name = Str::studly(str_replace('modules/', '', $module));
-            $folder = "modules/{$name}";
+            $folder = 'modules'.DIRECTORY_SEPARATOR.$name;
             $rows[] = [$name, $folder];
         }
 

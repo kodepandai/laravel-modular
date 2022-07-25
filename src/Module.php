@@ -50,7 +50,7 @@ class Module
     public function hasViews(): self
     {
         $this->hasViews = true;
-        $this->viewPath = $this->basePath('resources/views');
+        $this->viewPath = $this->basePath('resources'.DIRECTORY_SEPARATOR.'views');
 
         return $this;
     }
@@ -58,7 +58,7 @@ class Module
     public function hasMigrations(): self
     {
         $this->hasMigrations = true;
-        $this->migrationPath = $this->basePath('database/migrations');
+        $this->migrationPath = $this->basePath('database'.DIRECTORY_SEPARATOR.'migrations');
 
         return $this;
     }
@@ -96,7 +96,7 @@ class Module
 
             foreach ($configNames as $configName) {
                 //.
-                $path = $this->basePath("config/{$configName}.php");
+                $path = $this->basePath('config'.DIRECTORY_SEPARATOR.$configName.'.php');
                 if (! file_exists($path)) {
                     throw new \Exception("Config file {$configName} does not exists!");
                 }
@@ -138,7 +138,7 @@ class Module
 
             foreach ($routeNames as $routeName) {
                 //.
-                $path = $this->basePath("routes/{$routeName}.php");
+                $path = $this->basePath('routes'.DIRECTORY_SEPARATOR.$routeName.'.php');
                 if (! file_exists($path)) {
                     throw new \Exception("Route file {$routeName} does not exists!");
                 }
@@ -223,8 +223,11 @@ class Module
 
     public function basePath(string $directory = null): string
     {
+        $ds = DIRECTORY_SEPARATOR;
+
         return $directory === null
-            ? $this->basePath : "{$this->basePath}/" . ltrim($directory, '/');
+            ? $this->basePath
+            : $this->basePath.$ds . ltrim($directory, $ds);
     }
 
     public function setBasePath(string $path): self

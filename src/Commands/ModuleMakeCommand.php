@@ -25,6 +25,7 @@ class ModuleMakeCommand extends Command
 
     public function handle(): int
     {
+        $ds = DIRECTORY_SEPARATOR;
         $name = Str::studly($this->argument('name'));
         $nameSlug = Str::slug($this->argument('name'));
 
@@ -42,10 +43,10 @@ class ModuleMakeCommand extends Command
         $this->line("> Creating composer.json file..");
 
         File::ensureDirectoryExists(module_path($name));
-        File::makeDirectory(module_path("{$name}/src"));
-        File::makeDirectory(module_path("{$name}/src/Providers"));
+        File::makeDirectory(module_path($name.$ds.'src'));
+        File::makeDirectory(module_path($name.$ds.'src'.$ds.'Providers'));
 
-        $composerContent = File::get(__DIR__.'/../../stubs/composer.json.stub');
+        $composerContent = File::get(__DIR__.$ds.'..'.$ds.'..'.$ds.'stubs'.$ds.'composer.json.stub');
         $composerContent = preg_replace('/_MODULENAME_/', $name, $composerContent);
         $composerContent = preg_replace('/_MODULENAMESLUG_/', $nameSlug, $composerContent);
 
@@ -53,14 +54,14 @@ class ModuleMakeCommand extends Command
 
         $this->line("> Creating {$name}ServiceProvider file..");
 
-        $providerContent = File::get(__DIR__.'/../../stubs/ModuleNameServiceProvider.php.stub');
+        $providerContent = File::get(__DIR__.$ds.'..'.$ds.'..'.$ds.'stubs/ModuleNameServiceProvider.php.stub');
         $providerContent = preg_replace('/_MODULENAME_/', $name, $providerContent);
 
-        File::put(module_path("{$name}/src/Providers/{$name}ServiceProvider.php"), $providerContent);
+        File::put(module_path($name.$ds.'src'.$ds.'Providers'.$ds.$name.'ServiceProvider.php'), $providerContent);
 
         $this->line("> Running composer install modules/{$nameSlug}..");
 
-        $installProcess = new Process(['composer', 'require', "modules/{$nameSlug}"], null);
+        $installProcess = new Process(['composer', 'require', 'modules'.$ds.$nameSlug], null);
         $installProcess->setWorkingDirectory(base_path());
         $installProcess->mustRun(function ($type, $buffer) {
             $this->getOutput()->write($buffer);

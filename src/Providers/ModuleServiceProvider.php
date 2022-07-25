@@ -109,9 +109,11 @@ abstract class ModuleServiceProvider extends ServiceProvider
 
     protected function getModuleBaseDir(): string
     {
+        $ds = DIRECTORY_SEPARATOR;
         $reflector = new ReflectionClass(get_class($this));
+        $dirName = dirname($reflector->getFileName());
 
-        return str_replace('/src/Providers', '', dirname($reflector->getFileName()));
+        return str_replace($ds.'src'.$ds.'Providers', '', $dirName);
     }
 
     /**

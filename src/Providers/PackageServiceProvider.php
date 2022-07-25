@@ -8,7 +8,8 @@ class PackageServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        require_once __DIR__.'/../../src/helpers.php';
+        $ds = DIRECTORY_SEPARATOR;
+        require_once __DIR__.$ds.'..'.$ds.'..'.$ds.'src'.$ds.'helpers.php';
     }
 
     public function boot(): void

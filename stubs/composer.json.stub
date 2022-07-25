@@ -2,14 +2,14 @@
   "name": "modules/_MODULENAMESLUG_",
   "autoload": {
     "psr-4": {
-      "_MODULENAME_\\": "src/",
+      "_MODULENAME_\\": "src",
       "_MODULENAME_\\Database\\Factories\\": "database/factories",
       "_MODULENAME_\\Database\\Seeeders\\": "database/seeders"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "_MODULENAME_\\Tests\\": "tests/"
+      "_MODULENAME_\\Tests\\": "tests"
     }
   },
   "extra": {
